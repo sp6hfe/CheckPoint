@@ -1,20 +1,19 @@
 #include <nfc/NfcSpi.hpp>
 
+#include <optional>
+
 namespace hwwrapper {
 
 bool NfcSpi::init() {
   _isinit = false;
 
-  if (!_nfc.begin()) {
-    return _isinit;
+  if (_nfc.begin()) {
+    auto fwVersion = _nfc.getFirmwareVersion();
+    if (fwVersion > 0U) {
+      _isinit = true;
+    }
   }
 
-  auto fwVersion = _nfc.getFirmwareVersion();
-  if (fwVersion == 0U) {
-    return _isinit;
-  }
-
-  _isinit = true;
   return _isinit;
 }
 
@@ -22,8 +21,29 @@ bool NfcSpi::isInit() {
   return _isinit;
 }
 
-uint32_t NfcSpi::getFwVersion() {
-  return _isinit ? _nfc.getFirmwareVersion() : 0U;
+std::optional<uint32_t> NfcSpi::getFwVersion() {
+  if (!_isinit) {
+    return std::nullopt;
+  }
+
+  return _nfc.getFirmwareVersion();
+}
+
+std::optional<hwicd> NfcSpi::lookupCard() {
+  if (!_isinit) {
+    return std::nullopt;
+  }
+
+  uint8_t uid[hwicd::MAX_UID_LEN] = {};  // UID buffer
+  uint8_t uidLength = 0U;                // UID length (4 or 7 bytes)
+
+  const auto success = _nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+  if (!success) {
+    return std::nullopt;
+  }
+
+  hwicd cardDetails{uid, uidLength};
+  return cardDetails;
 }
 
 }  // namespace hwwrapper

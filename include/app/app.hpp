@@ -1,12 +1,13 @@
 #pragma once
 
+#include <logger/ILogger.hpp>
 #include <nfc/INfc.hpp>
 
 namespace app {
 
 class App {
 public:
-  App(hw::INfc& nfc) : _nfc(nfc) {}
+  App(interface::ILogger& logger, hw::interface::INfc& nfc) : _logger(logger), _nfc(nfc) {}
 
   ~App() {}
 
@@ -15,7 +16,8 @@ public:
   void process();
 
 private:
-  hw::INfc& _nfc;
+  interface::ILogger& _logger;
+  hw::interface::INfc& _nfc;
 };
 
 }  // namespace app
