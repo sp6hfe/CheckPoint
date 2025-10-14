@@ -17,9 +17,10 @@ bool App::init() {
 }
 
 void App::process() {
-  // const auto cardDetails = _nfc.lookupCard();
-  // if (cardDetails.has_value()) {
-  // }
+  const auto cardDetails = _nfc.lookupCard();
+  if (cardDetails.has_value()) {
+    _logger.logf(LogLevel::Info, "app", "Card detected. UID: %s", cardDetails->getUid());
+  }
 }
 
 }  // namespace app

@@ -5,22 +5,29 @@
 #include <optional>
 #include <stdint.h>
 
+#include <etl/span.h>
+
 namespace hw::interface {
 
 class INfc {
 public:
   class CardDetails {
   public:
-    static constexpr uint8_t MAX_UID_LEN = 7U;
+    static constexpr std::size_t MAX_UID_LEN{7U};
 
-    CardDetails(uint8_t* uid, uint8_t uidLen) {
+    CardDetails(uint8_t* uid, std::size_t uidLen) {
       const auto len = (uidLen > MAX_UID_LEN ? MAX_UID_LEN : uidLen);
       std::copy_n(uid, len, _uid.begin());
+      _uidLen = len;
+    }
+
+    etl::span<const uint8_t> getUid() const {
+      return {_uid.data(), _uidLen};
     }
 
   private:
     std::array<uint8_t, MAX_UID_LEN> _uid{};
-    uint8_t _uidLen{};
+    std::size_t _uidLen{};
   };
 
   virtual bool isInit() = 0;
