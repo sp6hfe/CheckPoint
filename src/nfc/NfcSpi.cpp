@@ -4,6 +4,9 @@
 
 namespace hwwrapper {
 
+static constexpr uint8_t MIFARE_AUTH_KEY_A{0U};
+static constexpr uint8_t MIFARE_AUTH_KEY_B{1U};
+
 bool NfcSpi::init() {
   _isinit = false;
 
@@ -30,15 +33,35 @@ std::optional<uint32_t> NfcSpi::getFwVersion() {
 }
 
 std::optional<hwicd> NfcSpi::lookupCard(uint16_t timeout_ms) {
+  static constexpr uint8_t AUTH_TRIES{3U};
+
   if (!_isinit) {
     return std::nullopt;
   }
 
-  uint8_t uid[hwicd::MAX_UID_LEN] = {};  // UID buffer
-  uint8_t uidLength = 0U;                // UID length (4 or 7 bytes)
+  uint8_t uid[hwicd::MAX_UID_LEN] = {};
+  uint8_t uidLength = 0U;
 
-  const auto success = _nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, timeout_ms);
-  if (!success) {
+  bool authenticated{false};
+  for (auto auth_try = 0U; auth_try < AUTH_TRIES; auth_try++) {
+    // detect the card
+    auto success = _nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, timeout_ms);
+    if (!success) {
+      continue;
+    }
+
+    // try to authenticate
+    // TODO: here authentication should be against default key and uid-derived one
+    uint8_t DEFAULT_AUTH_KEY[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    uint32_t DEFAULT_AUTH_BLOCK{4U};
+    success = _nfc.mifareclassic_AuthenticateBlock(uid, uidLength, DEFAULT_AUTH_BLOCK, MIFARE_AUTH_KEY_A, DEFAULT_AUTH_KEY);
+    if (success) {
+      authenticated = true;
+      break;
+    }
+  }
+
+  if (!authenticated) {
     return std::nullopt;
   }
 
