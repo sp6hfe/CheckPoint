@@ -29,7 +29,7 @@ std::optional<uint32_t> NfcSpi::getFwVersion() {
   return _nfc.getFirmwareVersion();
 }
 
-std::optional<hwicd> NfcSpi::lookupCard() {
+std::optional<hwicd> NfcSpi::lookupCard(uint16_t timeout_ms) {
   if (!_isinit) {
     return std::nullopt;
   }
@@ -37,7 +37,7 @@ std::optional<hwicd> NfcSpi::lookupCard() {
   uint8_t uid[hwicd::MAX_UID_LEN] = {};  // UID buffer
   uint8_t uidLength = 0U;                // UID length (4 or 7 bytes)
 
-  const auto success = _nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+  const auto success = _nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, timeout_ms);
   if (!success) {
     return std::nullopt;
   }

@@ -34,7 +34,7 @@ public:
 
   virtual std::optional<uint32_t> getFwVersion() = 0;
 
-  virtual std::optional<CardDetails> lookupCard() = 0;
+  virtual std::optional<CardDetails> lookupCard(uint16_t timeout_ms) = 0;
 
   virtual ~INfc() {};
 };

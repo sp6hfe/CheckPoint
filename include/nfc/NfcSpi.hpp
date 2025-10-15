@@ -29,7 +29,7 @@ public:
 
   std::optional<uint32_t> getFwVersion() override;
 
-  std::optional<hwicd> lookupCard() override;
+  std::optional<hwicd> lookupCard(uint16_t timeout_ms) override;
 
 private:
   Adafruit_PN532 _nfc;
