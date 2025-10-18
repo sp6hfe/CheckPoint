@@ -11,6 +11,8 @@ namespace hw::interface {
 
 class INfc {
 public:
+  static constexpr std::size_t AUTH_KEY_LEN{6U};
+
   class CardDetails {
   public:
     static constexpr std::size_t MAX_UID_LEN{7U};
